@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorldCoin</title>
+</head>
+<body>
+    <h1>WorldCoin</h1>
+
+    <div id="results">
+        <!-- Aquí se mostrarán los resultados -->
+    </div>
+
+    <script>
+        // Función para hacer la solicitud HTTP al API del precio del dólar blue
+        function getPrecioDolarBlue() {
+            fetch('https://dolarapi.com/v1/dolares/blue')
+                .then(response => response.json())
+                .then(data => {
+                    const precioCompra = data.compra;
+                    // Una vez que tenemos el precio del dólar blue, hacemos la siguiente solicitud
+                    getPrecioWorldCoin(precioCompra);
+                })
+                .catch(error => {
+                    console.error('Error fetching blue dollar data:', error);
+                });
+        }
+
+        // Función para hacer la solicitud HTTP al API del precio de WorldCoin
+        function getPrecioWorldCoin(precioCompraDolar) {
+            fetch('https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail?slug=worldcoin-org')
+                .then(response => response.json())
+                .then(data => {
+                    const precio = data.data.statistics.price;
+                    const porcentajeUltimaHora = data.data.statistics.priceChangePercentage1h;
+                    const porcentajeUltimas24Horas = data.data.statistics.priceChangePercentage24h;
+                    const porcentajeUltimos7Dias = data.data.statistics.priceChangePercentage7d;
+
+                    // Realizar cálculos basados en los datos obtenidos
+                    const precioTruncado = Math.floor(precio);
+                    const usdComisionCamila = (precioTruncado * 13) * 0.05;
+                    const pesosComisionCamila = ((precioTruncado * 13) * 0.05) * precioCompra;
+                    const usdDelCliente = (precioTruncado * 13) * 0.65;
+                    const pesosDelCliente = ((precioTruncado * 13) * 0.65) * precioCompra;
+                    const usdRestantes = (precioTruncado * 13) * 0.30;
+                    const comisionCueva = Math.round(usdRestantes * 0.05 * 100) / 100;
+                    const gananciaUSD = usdRestantes - comisionCueva;
+                    const gananciaPesos = gananciaUSD * precioCompra;
+                    const usdDelClienteAfiliado = Math.round((precioTruncado * 13) * 0.70 * 100) / 100;
+                    const pesosDelClienteAfiliado = ((precioTruncado * 13) * 0.70) * precioCompra;
+                    const usdRestantesAfiliado = (precioTruncado * 13) * 0.25;
+                    const comisionCuevaAfiliado = Math.round(usdRestantesAfiliado * 0.05 * 100) / 100;
+                    const gananciaUSDAfiliado = usdRestantesAfiliado - comisionCuevaAfiliado;
+                    const gananciaPesosAfiliado = Math.round(gananciaUSDAfiliado * precioCompra * 100) / 100;
+
+                    // Mostrar los resultados en la página
+                    mostrarResultados(precio, precioCompra, porcentajeUltimaHora, porcentajeUltimas24Horas, porcentajeUltimos7Dias, usdDelCliente, pesosDelCliente, usdComisionCamila, pesosComisionCamila, comisionCueva, gananciaUSD, gananciaPesos, usdDelClienteAfiliado, pesosDelClienteAfiliado, comisionCuevaAfiliado, gananciaUSDAfiliado, gananciaPesosAfiliado);
+                })
+                .catch(error => {
+                    console.error('Error fetching WorldCoin data:', error);
+                });
+        }
+
+        // Función para mostrar los resultados en la página
+        function mostrarResultados(precio, precioCompra, porcentajeUltimaHora, porcentajeUltimas24Horas, porcentajeUltimos7Dias, usdDelCliente, pesosDelCliente, usdComisionCamila, pesosComisionCamila, comisionCueva, gananciaUSD, gananciaPesos, usdDelClienteAfiliado, pesosDelClienteAfiliado, comisionCuevaAfiliado, gananciaUSDAfiliado, gananciaPesosAfiliado) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h2>Resultados</h2>
+                <p>Precio WorldCoin: ${precio}</p>
+                <p>Precio Dolar Blue: ${precioCompra}</p>
+                <p>Cambios:</p>
+                <ul>
+                    <li>Porcentaje última hora: ${porcentajeUltimaHora}%</li>
+                    <li>Porcentaje últimas 24 horas: ${porcentajeUltimas24Horas}%</li>
+                    <li>Porcentaje últimos 7 días: ${porcentajeUltimos7Dias}%</li>
+                </ul>
+                <p>Sin afiliación:</p>
+                <ul>
+                    <li>Cliente:</li>
+                    <ul>
+                        <li>USD: ${usdDelCliente}</li>
+                        <li>PESOS: ${pesosDelCliente}</li>
+                    </ul>
+                    <li>Camila:</li>
+                    <ul>
+                        <li>Comisión USD: ${usdComisionCamila}</li>
+                        <li>Comisión PESOS: ${pesosComisionCamila}</li>
+                    </ul>
+                    <li>Ganancia:</li>
+                    <ul>
+                        <li>Comisión cueva: ${comisionCueva}</li>
+                        <li>Ganancia USD: ${gananciaUSD}</li>
+                        <li>Ganancia PESOS: ${gananciaPesos}</li>
+                    </ul>
+                </ul>
+                <p>Con afiliación:</p>
+                <ul>
+                    <li>Cliente:</li>
+                    <ul>
+                        <li>USD del cliente: ${usdDelClienteAfiliado}</li>
+                        <li>PESOS del cliente: ${pesosDelClienteAfiliado}</li>
+                    </ul>
+                    <li>Camila:</li>
+                    <ul>
+                        <li>Comisión cueva: ${comisionCuevaAfiliado}</li>
+                        <li>Ganancia USD: ${gananciaUSDAfiliado}</li>
+                        <li>Ganancia PESOS: ${gananciaPesosAfiliado}</li>
+                    </ul>
+                </ul>
+            `;
+        }
+
+        // Llamar a la función para obtener el precio del dólar blue al cargar la página
+        getPrecioDolarBlue();
+    </script>
+</body>
+</html>
