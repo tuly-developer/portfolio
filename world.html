@@ -1,5 +1,13 @@
-<?php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Coin Prices</title>
+</head>
+<body>
 
+<?php
 // Precio dolar blue
 $response_dolar_blue = file_get_contents('https://dolarapi.com/v1/dolares/blue');
 if ($response_dolar_blue !== false) {
@@ -57,5 +65,9 @@ if ($response_world_coin !== false) {
         ],
     ];
 
-    echo json_encode($result, JSON_PRETTY_PRINT);
+    echo '<pre>' . json_encode($result, JSON_PRETTY_PRINT) . '</pre>';
 }
+?>
+
+</body>
+</html>
